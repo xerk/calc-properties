@@ -5,6 +5,8 @@ import { type PlanType, type SizeFilter, properties, formatNumber, parseNumber }
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { PropertyCard } from "@/components/features/properties/property-card";
 import { ComparisonTable } from "@/components/features/properties/comparison-table";
@@ -171,7 +173,28 @@ export function PropertyAnalyzer() {
           </div>
         </div>
 
-        <span className="ml-auto text-xs text-muted-foreground">
+        {/* Selection State */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 border border-primary/20">
+            <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs font-bold text-primary">
+              {selected.length} Selected
+            </span>
+          </div>
+          {selected.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setSelected([])}
+              className="h-7 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 gap-1.5"
+            >
+              <X className="size-3" />
+              <span className="text-[10px] uppercase font-bold tracking-tight">Clear</span>
+            </Button>
+          )}
+        </div>
+
+        <span className="ml-auto text-xs text-muted-foreground hidden sm:inline">
           Click cards to select for comparison
         </span>
       </div>
