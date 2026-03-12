@@ -198,18 +198,29 @@ export const properties: Property[] = [
 ];
 
 /** Format number with locale string, e.g. 1,234,567 */
-export const fmt = (n: number | null | undefined): string =>
-  n != null
-    ? n.toLocaleString("en-US", { maximumFractionDigits: 0 })
-    : "—";
+export function fmt(v: number) {
+  return new Intl.NumberFormat("en-US").format(v);
+}
 
 /** Format number in compact form: 8.76M, 377K, etc. */
-export const fmtK = (n: number | null | undefined): string => {
-  if (n == null) return "—";
-  if (n >= 1000000) return (n / 1000000).toFixed(2) + "M";
-  if (n >= 1000) return (n / 1000).toFixed(0) + "K";
-  return fmt(n);
-};
+export function fmtK(v: number) {
+  if (v >= 1000000) return (v / 1000000).toFixed(2) + "M";
+  if (v >= 1000) return (v / 1000).toFixed(0) + "k";
+  return v.toString();
+}
 
 /** Format decimal as percentage string, e.g. 0.21 → "21.0%" */
-export const pct = (n: number): string => (n * 100).toFixed(1) + "%";
+export function pct(v: number) {
+  return (v * 100).toFixed(1) + "%";
+}
+
+export function getRentalYield(totalPrice: number, bua: number): number {
+  // Estimated annual rent based on area quality and size
+  // Simple conservative model: ~5-7% of total price annually
+  const annualRent = totalPrice * 0.055; 
+  return annualRent / totalPrice;
+}
+
+export function isCoreAndShell(project: string): boolean {
+  return !["TALALA"].includes(project);
+}

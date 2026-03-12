@@ -1,9 +1,12 @@
 "use client";
 
-import { type Property, type Finances, type PlanType, fmt, fmtK, pct } from "@/lib/data";
-import { Card, CardContent } from "@/components/ui/card";
+import { type Property, type Finances, type PlanType, fmt, fmtK, pct, getRentalYield, isCoreAndShell } from "@/lib/data";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Calendar, TrendingUp, Info } from "lucide-react";
+import { PaymentScheduleSidebar } from "@/components/features/properties/payment-schedule-sidebar";
 import { cn } from "@/lib/utils";
 
 interface PropertyCardProps {
@@ -15,6 +18,7 @@ interface PropertyCardProps {
   cheapestStd: number;
   finances: Finances;
   privacyMode: boolean;
+  finishingPricePerSqm: number;
 }
 
 function mask(value: string, privacyMode: boolean): string {
@@ -43,8 +47,14 @@ export function PropertyCard({
   cheapestStd,
   finances,
   privacyMode,
+  finishingPricePerSqm,
 }: PropertyCardProps) {
-  const final = plan === "custom" ? p.customFinal : p.standardFinal;
+  const needsFinishing = isCoreAndShell(p.project);
+  const finishingCostTotal = needsFinishing ? finishingPricePerSqm * p.bua : 0;
+
+  const finalWithoutFinishing = plan === "custom" ? p.customFinal : p.standardFinal;
+  const final = finalWithoutFinishing + finishingCostTotal;
+
   const duration = plan === "custom" ? p.customDuration : p.standardDuration;
   const installments = plan === "custom" ? p.customInstallments : p.standardInstallments;
   const discount = plan === "custom" ? p.customDiscount : p.standardDiscount;
@@ -52,6 +62,8 @@ export function PropertyCard({
   const pricePerSqm = final / p.bua;
   const cheapest = plan === "custom" ? cheapestCustom : cheapestStd;
   const isCheapest = pricePerSqm <= cheapest;
+
+  const rentalYield = getRentalYield(final, p.bua);
 
   const downPayment = plan === "custom" ? p.downPaymentCustom : p.downPaymentStd;
   const quarterly = plan === "custom" ? p.quarterlyCustom : (p.quarterlyStd || 0);
@@ -144,7 +156,7 @@ export function PropertyCard({
               <p className="font-mono text-sm text-emerald-400">{pct(discountPct)}</p>
             </div>
             <div>
-              <InfoTip tip="Price per square meter of built-up area">
+              <InfoTip tip="Price per square meter of built-up area (includes finishing cost if applied)">
                 <p className="text-xs text-muted-foreground">Price/sqm</p>
               </InfoTip>
               <p className="font-mono text-sm font-semibold text-foreground">
@@ -152,6 +164,16 @@ export function PropertyCard({
               </p>
             </div>
           </div>
+
+          {finishingCostTotal > 0 && (
+            <div className="rounded-md border border-amber-500/20 bg-amber-500/5 p-2 flex justify-between items-center">
+              <div className="flex items-center gap-1.5">
+                <Info className="size-3 text-amber-400" />
+                <span className="text-[10px] font-medium text-amber-400 uppercase tracking-tight">Finishing Est.</span>
+              </div>
+              <span className="font-mono text-xs text-foreground font-semibold">+{fmtK(finishingCostTotal)}</span>
+            </div>
+          )}
 
           {/* Payment Details */}
           <div className="space-y-2 rounded-lg bg-muted/50 p-3">
@@ -231,6 +253,30 @@ export function PropertyCard({
               </div>
             </div>
           )}
+
+          {/* ROI / Yield */}
+          <div className="flex items-center gap-3 pt-1">
+            <div className="flex-1 rounded-lg border border-primary/20 bg-primary/5 p-2">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="size-3 text-primary" />
+                <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Est. Rental Yield</span>
+              </div>
+              <p className="mt-0.5 font-mono text-sm font-bold text-foreground">{pct(rentalYield)} <span className="text-[10px] font-normal text-muted-foreground text-nowrap">yr / net</span></p>
+            </div>
+            <PaymentScheduleSidebar property={p} plan={plan}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 text-xs gap-1.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Calendar className="size-3" />
+                Schedule
+              </Button>
+            </PaymentScheduleSidebar>
+          </div>
         </CardContent>
       </Card>
     </TooltipProvider>

@@ -3,12 +3,17 @@
 import { useState, useMemo } from "react";
 import { type PlanType, type SizeFilter, properties } from "@/lib/data";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { PropertyCard } from "@/components/features/properties/property-card";
 import { ComparisonTable } from "@/components/features/properties/comparison-table";
 import { PriceComparisonChart } from "@/components/features/properties/price-comparison-chart";
 import { NpvComparisonChart } from "@/components/features/properties/npv-comparison-chart";
 import { FinancialProfile } from "@/components/features/properties/financial-profile";
+
+import { ScenarioManager } from "@/components/features/properties/scenario-manager";
+import { type Scenario } from "@/lib/db/schema";
 
 export function PropertyAnalyzer() {
   const [plan, setPlan] = useState<PlanType>("custom");
@@ -18,8 +23,17 @@ export function PropertyAnalyzer() {
   const [worstSalaryUSD, setWorstSalaryUSD] = useState(2300);
   const [sizeFilter, setSizeFilter] = useState<SizeFilter>("all");
   const [privacyMode, setPrivacyMode] = useState(false);
+  const [finishingPricePerSqm, setFinishingPricePerSqm] = useState(0);
 
   const { rate: exchangeRate, setRate: setExchangeRate, loading: rateLoading, error: rateError } = useExchangeRate();
+
+  const handleLoadScenario = (s: Scenario) => {
+    setBalanceUSD(s.balanceUSD);
+    setMaxSalaryUSD(s.maxSalaryUSD);
+    setWorstSalaryUSD(s.worstSalaryUSD);
+    // Note: We keep the current live exchange rate as the active one, 
+    // but the scenario stores the rate it was saved with for reference if needed.
+  };
 
   const finances = useMemo(
     () => ({
@@ -64,24 +78,39 @@ export function PropertyAnalyzer() {
         </p>
       </div>
 
-      {/* Financial Inputs */}
-      <FinancialProfile
-        balanceUSD={balanceUSD}
-        maxSalaryUSD={maxSalaryUSD}
-        worstSalaryUSD={worstSalaryUSD}
-        exchangeRate={exchangeRate}
-        finances={finances}
-        privacyMode={privacyMode}
-        rateLoading={rateLoading}
-        rateError={rateError}
-        onBalanceChange={setBalanceUSD}
-        onMaxSalaryChange={setMaxSalaryUSD}
-        onWorstSalaryChange={setWorstSalaryUSD}
-        onPrivacyToggle={setPrivacyMode}
-      />
+      {/* Financial Inputs & Scenarios */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <FinancialProfile
+            balanceUSD={balanceUSD}
+            maxSalaryUSD={maxSalaryUSD}
+            worstSalaryUSD={worstSalaryUSD}
+            exchangeRate={exchangeRate}
+            finances={finances}
+            privacyMode={privacyMode}
+            rateLoading={rateLoading}
+            rateError={rateError}
+            onBalanceChange={setBalanceUSD}
+            onMaxSalaryChange={setMaxSalaryUSD}
+            onWorstSalaryChange={setWorstSalaryUSD}
+            onPrivacyToggle={setPrivacyMode}
+          />
+        </div>
+        <div className="lg:col-span-1">
+          <ScenarioManager
+            currentProfile={{
+              balanceUSD,
+              maxSalaryUSD,
+              worstSalaryUSD,
+              exchangeRate,
+            }}
+            onLoad={handleLoadScenario}
+          />
+        </div>
+      </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <Tabs
           value={plan}
           onValueChange={(v) => setPlan(v as PlanType)}
@@ -103,6 +132,23 @@ export function PropertyAnalyzer() {
           </TabsList>
         </Tabs>
 
+        {/* Finishing Cost Estimator */}
+        <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/30 px-3 py-1.5 shadow-sm">
+          <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+            Finishing Cost /sqm
+          </label>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={finishingPricePerSqm || ""}
+              onChange={(e) => setFinishingPricePerSqm(Number(e.target.value))}
+              placeholder="0"
+              className="h-7 w-20 bg-background text-xs"
+            />
+            <span className="text-[10px] text-muted-foreground font-mono">EGP</span>
+          </div>
+        </div>
+
         <span className="ml-auto text-xs text-muted-foreground">
           Click cards to select for comparison
         </span>
@@ -121,13 +167,18 @@ export function PropertyAnalyzer() {
             cheapestStd={cheapestStd}
             finances={finances}
             privacyMode={privacyMode}
+            finishingPricePerSqm={finishingPricePerSqm}
           />
         ))}
       </div>
 
       {/* Comparison Table */}
       {selected.length >= 2 && (
-        <ComparisonTable selected={selected} plan={plan} />
+        <ComparisonTable 
+          selected={selected} 
+          plan={plan} 
+          finishingPricePerSqm={finishingPricePerSqm} 
+        />
       )}
 
       {/* Visual Charts */}
