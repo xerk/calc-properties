@@ -37,10 +37,15 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+
+    /* Property Compare specific tokens */
+    --success: oklch(0.65 0.2 145);
+    --success-foreground: oklch(0.985 0 0);
+    --warning: oklch(0.75 0.18 85);
+    --warning-foreground: oklch(0.205 0 0);
 }
 
 .dark {
-    /* Dark navy theme — matching draft-ui.jsx design */
     --background: oklch(0.14 0.025 260);
     --foreground: oklch(0.93 0.008 250);
     --card: oklch(0.14 0.025 260);
@@ -72,6 +77,12 @@
     --sidebar-accent-foreground: oklch(0.985 0.003 245);
     --sidebar-border: oklch(0.25 0.035 255);
     --sidebar-ring: oklch(0.63 0.08 245);
+
+    /* Property Compare specific tokens */
+    --success: oklch(0.65 0.2 155);
+    --success-foreground: oklch(0.14 0.025 260);
+    --warning: oklch(0.75 0.15 85);
+    --warning-foreground: oklch(0.14 0.025 260);
 }
 
 @theme inline {
@@ -107,6 +118,10 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -117,13 +132,129 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
-  html {
-    @apply font-sans;
+    html {
+        @apply font-sans;
+    }
+}
+
+/* ─── Property Compare Page Styles ─── */
+
+@layer components {
+    /* Card hover & selection ring */
+    .property-card {
+        @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm
+               transition-all duration-300 cursor-pointer;
+    }
+    .property-card:hover {
+        @apply shadow-md border-primary/40;
+    }
+    .property-card[data-selected="true"] {
+        @apply ring-2 ring-primary border-primary;
+    }
+
+    /* Tab bar */
+    .tab-bar {
+        @apply flex gap-1 rounded-lg bg-muted p-1;
+    }
+    .tab-btn {
+        @apply rounded-md px-3 py-1.5 text-sm font-medium transition-all
+               text-muted-foreground;
+    }
+    .tab-btn:hover {
+        @apply text-foreground;
+    }
+    .tab-btn[data-active="true"] {
+        @apply bg-background text-foreground shadow-sm;
+    }
+
+    /* Badge variants */
+    .badge {
+        @apply inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset;
+    }
+    .badge-default {
+        @apply bg-primary/10 text-primary ring-primary/20;
+    }
+    .badge-secondary {
+        @apply bg-secondary text-secondary-foreground ring-border;
+    }
+    .badge-success {
+        @apply bg-success/10 text-success ring-success/20;
+    }
+    .badge-warning {
+        @apply bg-warning/10 text-warning ring-warning/20;
+    }
+    .badge-destructive {
+        @apply bg-destructive/10 text-destructive ring-destructive/20;
+    }
+
+    /* Progress bar */
+    .progress-track {
+        @apply h-2 w-full rounded-full bg-muted overflow-hidden;
+    }
+    .progress-fill {
+        @apply h-full rounded-full transition-all duration-500;
+    }
+
+    /* Affordability indicator dots */
+    .dot-ok {
+        @apply w-2 h-2 rounded-full bg-success;
+    }
+    .dot-warn {
+        @apply w-2 h-2 rounded-full bg-warning;
+    }
+    .dot-bad {
+        @apply w-2 h-2 rounded-full bg-destructive;
+    }
+
+    /* Financial input fields */
+    .finance-input {
+        @apply w-full rounded-lg border border-input bg-background px-3 py-2
+               text-sm font-mono text-foreground
+               focus:outline-none focus:ring-2 focus:ring-ring;
+    }
+
+    /* Summary pill */
+    .summary-pill {
+        @apply flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5;
+    }
+
+    /* Comparison table */
+    .compare-table {
+        @apply w-full text-xs;
+    }
+    .compare-table thead tr {
+        @apply border-b border-border;
+    }
+    .compare-table thead th {
+        @apply py-2 px-2 text-foreground font-semibold;
+    }
+    .compare-table tbody tr {
+        @apply border-b border-border/50;
+    }
+    .compare-table tbody td {
+        @apply py-2 px-2 font-mono text-foreground;
+    }
+
+    /* Payment detail block */
+    .payment-block {
+        @apply rounded-lg bg-muted/50 p-3 space-y-2;
+    }
+
+    /* Price grid inside card */
+    .price-grid {
+        @apply grid grid-cols-2 gap-3;
+    }
+}
+
+/* ─── Mono font for numbers ─── */
+@layer base {
+    .font-mono {
+        font-variant-numeric: tabular-nums;
     }
 }

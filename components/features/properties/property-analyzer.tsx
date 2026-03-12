@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { type PlanType, type SizeFilter, properties } from "@/lib/data";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { PropertyCard } from "@/components/features/properties/property-card";
 import { ComparisonTable } from "@/components/features/properties/comparison-table";
 import { PriceComparisonChart } from "@/components/features/properties/price-comparison-chart";
@@ -15,8 +16,10 @@ export function PropertyAnalyzer() {
   const [balanceUSD, setBalanceUSD] = useState(10000);
   const [maxSalaryUSD, setMaxSalaryUSD] = useState(3000);
   const [worstSalaryUSD, setWorstSalaryUSD] = useState(2300);
-  const [exchangeRate, setExchangeRate] = useState(50);
   const [sizeFilter, setSizeFilter] = useState<SizeFilter>("all");
+  const [privacyMode, setPrivacyMode] = useState(false);
+
+  const { rate: exchangeRate, setRate: setExchangeRate, loading: rateLoading, error: rateError } = useExchangeRate();
 
   const finances = useMemo(
     () => ({
@@ -68,10 +71,13 @@ export function PropertyAnalyzer() {
         worstSalaryUSD={worstSalaryUSD}
         exchangeRate={exchangeRate}
         finances={finances}
+        privacyMode={privacyMode}
+        rateLoading={rateLoading}
+        rateError={rateError}
         onBalanceChange={setBalanceUSD}
         onMaxSalaryChange={setMaxSalaryUSD}
         onWorstSalaryChange={setWorstSalaryUSD}
-        onExchangeRateChange={setExchangeRate}
+        onPrivacyToggle={setPrivacyMode}
       />
 
       {/* Controls */}
@@ -114,6 +120,7 @@ export function PropertyAnalyzer() {
             cheapestCustom={cheapestCustom}
             cheapestStd={cheapestStd}
             finances={finances}
+            privacyMode={privacyMode}
           />
         ))}
       </div>
