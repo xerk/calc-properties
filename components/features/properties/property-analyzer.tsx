@@ -13,6 +13,7 @@ import { NpvComparisonChart } from "@/components/features/properties/npv-compari
 import { FinancialProfile } from "@/components/features/properties/financial-profile";
 
 import { ScenarioManager } from "@/components/features/properties/scenario-manager";
+import { PropertyMap } from "@/components/features/properties/property-map";
 import { type Scenario } from "@/lib/db/schema";
 
 export function PropertyAnalyzer() {
@@ -80,7 +81,7 @@ export function PropertyAnalyzer() {
 
       {/* Financial Inputs & Scenarios */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <FinancialProfile
             balanceUSD={balanceUSD}
             maxSalaryUSD={maxSalaryUSD}
@@ -95,8 +96,15 @@ export function PropertyAnalyzer() {
             onWorstSalaryChange={setWorstSalaryUSD}
             onPrivacyToggle={setPrivacyMode}
           />
+          
+          {/* Visual Charts - Moved up for better info density */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <PriceComparisonChart plan={plan} />
+            <NpvComparisonChart />
+          </div>
         </div>
-        <div className="lg:col-span-1">
+        
+        <div className="lg:col-span-1 space-y-6">
           <ScenarioManager
             currentProfile={{
               balanceUSD,
@@ -106,6 +114,7 @@ export function PropertyAnalyzer() {
             }}
             onLoad={handleLoadScenario}
           />
+          <PropertyMap />
         </div>
       </div>
 
