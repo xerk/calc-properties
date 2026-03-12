@@ -1,7 +1,14 @@
 "use client";
 
 import { type Property, type Finances, type PlanType, fmt, fmtK, pct, getRentalYield, isCoreAndShell } from "@/lib/data";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -254,30 +261,31 @@ export function PropertyCard({
             </div>
           )}
 
-          {/* ROI / Yield */}
-          <div className="flex items-center gap-3 pt-1">
-            <div className="flex-1 rounded-lg border border-primary/20 bg-primary/5 p-2">
+        </CardContent>
+        <CardFooter className="p-3 pt-0 border-t border-border/50">
+          <div className="w-full flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-2 mt-3">
+            <div>
               <div className="flex items-center gap-1.5">
                 <TrendingUp className="size-3 text-primary" />
                 <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Est. Rental Yield</span>
               </div>
               <p className="mt-0.5 font-mono text-sm font-bold text-foreground">{pct(rentalYield)} <span className="text-[10px] font-normal text-muted-foreground text-nowrap">yr / net</span></p>
             </div>
+            
             <PaymentScheduleSidebar property={p} plan={plan}>
               <Button
-                variant="outline"
-                size="sm"
-                className="h-10 text-xs gap-1.5"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
               >
-                <Calendar className="size-3" />
-                Schedule
+                <Calendar className="size-4" />
               </Button>
             </PaymentScheduleSidebar>
           </div>
-        </CardContent>
+        </CardFooter>
       </Card>
     </TooltipProvider>
   );

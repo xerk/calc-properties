@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { type PlanType, type SizeFilter, properties } from "@/lib/data";
+import { type PlanType, type SizeFilter, properties, formatNumber, parseNumber } from "@/lib/data";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ export function PropertyAnalyzer() {
   const [sizeFilter, setSizeFilter] = useState<SizeFilter>("all");
   const [privacyMode, setPrivacyMode] = useState(false);
   const [finishingPricePerSqm, setFinishingPricePerSqm] = useState(0);
+  const [finishingInput, setFinishingInput] = useState("0");
 
   const { rate: exchangeRate, setRate: setExchangeRate, loading: rateLoading, error: rateError } = useExchangeRate();
 
@@ -32,8 +33,26 @@ export function PropertyAnalyzer() {
     setBalanceUSD(s.balanceUSD);
     setMaxSalaryUSD(s.maxSalaryUSD);
     setWorstSalaryUSD(s.worstSalaryUSD);
-    // Note: We keep the current live exchange rate as the active one, 
-    // but the scenario stores the rate it was saved with for reference if needed.
+    setFinishingPricePerSqm(0); // Reset finishing or keep current? Usually better to reset to sane default or let user adjust.
+    setFinishingInput("0");
+  };
+
+  const handleFinishingChange = (val: string) => {
+    if (/[\d.]+[km]$/i.test(val)) {
+      const num = parseNumber(val);
+      setFinishingInput(formatNumber(num));
+      setFinishingPricePerSqm(num);
+    } else {
+      setFinishingInput(val);
+      const num = parseNumber(val);
+      if (!isNaN(num)) setFinishingPricePerSqm(num);
+    }
+  };
+
+  const handleFinishingBlur = (val: string) => {
+    const num = parseNumber(val);
+    setFinishingPricePerSqm(num);
+    setFinishingInput(formatNumber(num));
   };
 
   const finances = useMemo(
@@ -79,9 +98,9 @@ export function PropertyAnalyzer() {
         </p>
       </div>
 
-      {/* Financial Inputs & Scenarios */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+      {/* Financial Profile & Map Context */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        <div className="lg:col-span-3">
           <FinancialProfile
             balanceUSD={balanceUSD}
             maxSalaryUSD={maxSalaryUSD}
@@ -95,25 +114,21 @@ export function PropertyAnalyzer() {
             onMaxSalaryChange={setMaxSalaryUSD}
             onWorstSalaryChange={setWorstSalaryUSD}
             onPrivacyToggle={setPrivacyMode}
+            renderActions={
+              <ScenarioManager
+                currentProfile={{
+                  balanceUSD,
+                  maxSalaryUSD,
+                  worstSalaryUSD,
+                  exchangeRate,
+                }}
+                onLoad={handleLoadScenario}
+              />
+            }
           />
-          
-          {/* Visual Charts - Moved up for better info density */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <PriceComparisonChart plan={plan} />
-            <NpvComparisonChart />
-          </div>
         </div>
         
-        <div className="lg:col-span-1 space-y-6">
-          <ScenarioManager
-            currentProfile={{
-              balanceUSD,
-              maxSalaryUSD,
-              worstSalaryUSD,
-              exchangeRate,
-            }}
-            onLoad={handleLoadScenario}
-          />
+        <div className="lg:col-span-1">
           <PropertyMap />
         </div>
       </div>
@@ -148,11 +163,12 @@ export function PropertyAnalyzer() {
           </label>
           <div className="flex items-center gap-2">
             <Input
-              type="number"
-              value={finishingPricePerSqm || ""}
-              onChange={(e) => setFinishingPricePerSqm(Number(e.target.value))}
+              type={privacyMode ? "password" : "text"}
+              value={finishingInput}
+              onChange={(e) => handleFinishingChange(e.target.value)}
+              onBlur={(e) => handleFinishingBlur(e.target.value)}
               placeholder="0"
-              className="h-7 w-20 bg-background text-xs"
+              className="h-7 w-20 bg-background text-xs font-mono"
             />
             <span className="text-[10px] text-muted-foreground font-mono">EGP</span>
           </div>
@@ -190,9 +206,11 @@ export function PropertyAnalyzer() {
         />
       )}
 
-      {/* Visual Charts */}
-      <PriceComparisonChart plan={plan} />
-      <NpvComparisonChart />
+      {/* Visual Charts - Moved back to bottom per user feedback */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <PriceComparisonChart plan={plan} />
+        <NpvComparisonChart />
+      </div>
 
       {/* Footer notes */}
       <div className="space-y-1 pb-8 text-xs text-muted-foreground">

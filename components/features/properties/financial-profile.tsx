@@ -24,6 +24,7 @@ interface FinancialProfileProps {
   onMaxSalaryChange: (v: number) => void;
   onWorstSalaryChange: (v: number) => void;
   onPrivacyToggle: (v: boolean) => void;
+  renderActions?: React.ReactNode;
 }
 
 function mask(value: string, privacyMode: boolean): string {
@@ -55,6 +56,7 @@ export function FinancialProfile({
   onMaxSalaryChange,
   onWorstSalaryChange,
   onPrivacyToggle,
+  renderActions,
 }: FinancialProfileProps) {
   const [balanceInput, setBalanceInput] = useState(formatNumber(balanceUSD));
   const [maxInput, setMaxInput] = useState(formatNumber(maxSalaryUSD));
@@ -94,9 +96,11 @@ export function FinancialProfile({
       <Collapsible defaultOpen>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Your Financial Profile</CardTitle>
+            <CardTitle className="text-sm">Financial Profile</CardTitle>
             <CardAction>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
+                {renderActions}
+                <div className="h-4 w-[1px] bg-border mx-1 hidden sm:block" />
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-2">

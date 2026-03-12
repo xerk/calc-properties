@@ -221,6 +221,18 @@ export function getRentalYield(totalPrice: number, bua: number): number {
   return annualRent / totalPrice;
 }
 
+export function formatNumber(val: number): string {
+  return new Intl.NumberFormat("en-US").format(val);
+}
+
+export function parseNumber(val: string): number {
+  const clean = val.replace(/,/g, "").toLowerCase();
+  if (clean.endsWith("k")) return parseFloat(clean) * 1000;
+  if (clean.endsWith("m")) return parseFloat(clean) * 1000000;
+  const parsed = parseFloat(clean);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 export function isCoreAndShell(project: string): boolean {
   return !["TALALA"].includes(project);
 }
