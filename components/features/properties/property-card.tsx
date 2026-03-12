@@ -36,7 +36,7 @@ function InfoTip({ children, tip }: { children: React.ReactNode; tip: string }) 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="cursor-help border-b border-dotted border-muted-foreground/40">
+        <span className="relative z-30 cursor-help border-b border-dotted border-muted-foreground/40">
           {children}
         </span>
       </TooltipTrigger>
@@ -97,49 +97,58 @@ export function PropertyCard({
     <TooltipProvider>
       <Card
         className={cn(
-          "relative cursor-pointer overflow-visible transition-all duration-300 hover:shadow-md",
-          isSelected
-            ? "ring-2 ring-primary border-primary"
-            : "hover:border-primary/40"
+          "relative z-10 flex h-full flex-col overflow-visible transition-all duration-300",
+          isSelected 
+            ? "ring-2 ring-primary border-primary/50 shadow-lg" 
+            : "hover:border-primary/30 border-border/50 shadow-sm"
         )}
-        onClick={() => onSelect(p.id)}
       >
         {isCheapest && (
-          <div className="absolute -top-2.5 left-4 z-10">
-            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-              Best Value /sqm
-            </Badge>
+          <div className="absolute -top-3 left-4 z-50 pointer-events-none">
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500 blur-md opacity-40 animate-pulse" />
+              <Badge className="relative bg-emerald-500 text-white border-none text-[9px] font-black uppercase tracking-[0.1em] px-3 py-1 shadow-xl">
+                Best Value /sqm
+              </Badge>
+            </div>
           </div>
         )}
 
-        <CardContent className="space-y-4 p-5">
+        {/* Clickable Overlay */}
+        <button
+          onClick={() => onSelect(p.id)}
+          className="absolute inset-0 z-10 size-full cursor-pointer outline-none"
+          aria-label={`Select ${p.project}`}
+        />
+
+        <CardContent className="flex flex-grow flex-col space-y-4 p-5">
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-foreground">
-                  {p.project}
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-xl font-black tracking-tight text-foreground">
+                  {p.project} {p.type}
                 </h3>
                 {p.finished && (
-                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                  <Badge variant="outline" className="h-4 border-emerald-500/30 text-emerald-400 text-[9px] uppercase font-bold px-1.5">
                     Finished
                   </Badge>
                 )}
                 {!p.finished && (
-                  <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
-                    Core &amp; Shell
+                  <Badge variant="outline" className="h-4 border-amber-500/30 text-amber-400 text-[9px] uppercase font-bold px-1.5">
+                    Core & Shell
                   </Badge>
                 )}
               </div>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {p.type} · <InfoTip tip="Built-Up Area — total usable floor space">{p.bua} sqm</InfoTip> · {p.location}
+              <p className="text-[10px] items-center flex gap-1.5 font-bold uppercase tracking-widest text-muted-foreground/50">
+                {p.project} <span className="size-1 rounded-full bg-border" /> {p.bua} sqm <span className="size-1 rounded-full bg-border" /> {p.location}
               </p>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <InfoTip tip="Net Present Value — the true economic cost accounting for time value of money">
-                <p className="text-xs text-muted-foreground">NPV</p>
+                <p className="text-[10px] uppercase font-bold tracking-tighter text-muted-foreground/40">NPV</p>
               </InfoTip>
-              <p className="font-mono text-sm font-semibold text-foreground">
+              <p className="font-mono text-sm font-bold text-foreground">
                 {fmtK(p.npv)}
               </p>
             </div>
@@ -262,7 +271,7 @@ export function PropertyCard({
           )}
 
         </CardContent>
-        <CardFooter className="px-4 py-3 border-t border-border/50">
+        <CardFooter className="relative z-20 px-4 py-3 border-t border-border/50">
           <div className="w-full flex items-center justify-between py-1">
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5 text-primary">

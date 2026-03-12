@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, RotateCcw } from "lucide-react";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
 import { PropertyCard } from "@/components/features/properties/property-card";
 import { ComparisonTable } from "@/components/features/properties/comparison-table";
@@ -20,7 +20,9 @@ import { type Scenario } from "@/lib/db/schema";
 
 export function PropertyAnalyzer() {
   const [plan, setPlan] = useState<PlanType>("custom");
-  const [selected, setSelected] = useState<number[]>([1, 3, 6]);
+  const [minArea, setMinArea] = useState<number>(0);
+  const [maxArea, setMaxArea] = useState<number>(1000);
+  const [selected, setSelected] = useState<number[]>([]);
   const [balanceUSD, setBalanceUSD] = useState(71300);
   const [maxSalaryUSD, setMaxSalaryUSD] = useState(10000);
   const [worstSalaryUSD, setWorstSalaryUSD] = useState(2300);
@@ -74,9 +76,13 @@ export function PropertyAnalyzer() {
   );
 
   const filtered = properties.filter((p) => {
-    if (sizeFilter === "212") return p.bua <= 215;
-    if (sizeFilter === "239") return p.bua >= 239;
-    return true;
+    const isSizeFilterMatch = sizeFilter === "all" ||
+      (sizeFilter === "212" && p.bua <= 215) ||
+      (sizeFilter === "239" && p.bua >= 239);
+
+    const isAreaMatch = p.bua >= minArea && p.bua <= maxArea;
+
+    return isSizeFilterMatch && isAreaMatch;
   });
 
   const toggleSelect = (id: number) => {
@@ -139,8 +145,14 @@ export function PropertyAnalyzer() {
           onValueChange={(v) => setPlan(v as PlanType)}
         >
           <TabsList>
-            <TabsTrigger value="custom">Customized Plan</TabsTrigger>
-            <TabsTrigger value="standard">Standard Plan</TabsTrigger>
+            <TabsTrigger value="custom" className="gap-1.5">
+              Customized Plan
+              <span className="text-[10px] opacity-50">({properties.filter(p => p.customFinal / p.bua === cheapestCustom).length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="standard" className="gap-1.5">
+              Standard Plan
+              <span className="text-[10px] opacity-50">({properties.filter(p => p.standardFinal / p.bua === cheapestStd).length})</span>
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -149,9 +161,18 @@ export function PropertyAnalyzer() {
           onValueChange={(v) => setSizeFilter(v as SizeFilter)}
         >
           <TabsList>
-            <TabsTrigger value="all">All Units</TabsTrigger>
-            <TabsTrigger value="212">~212 sqm</TabsTrigger>
-            <TabsTrigger value="239">~239+ sqm</TabsTrigger>
+            <TabsTrigger value="all" className="gap-1.5">
+              All Units
+              <span className="text-[10px] opacity-50">({properties.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="212" className="gap-1.5">
+              ~212 sqm
+              <span className="text-[10px] opacity-50">({properties.filter(p => p.bua <= 215).length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="239" className="gap-1.5">
+              ~239+ sqm
+              <span className="text-[10px] opacity-50">({properties.filter(p => p.bua >= 239).length})</span>
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
