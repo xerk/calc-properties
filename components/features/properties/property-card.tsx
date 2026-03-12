@@ -69,7 +69,8 @@ export function PropertyCard({
     avgMonthly = (final - downPayment) / (p.standardDuration * 12);
   }
 
-  const canAffordDown = finances.balance >= downPayment + p.maintenanceAmount;
+  const canAffordDown = finances.balance >= downPayment;
+  const canAffordMaintenance = finances.balance >= p.maintenanceAmount;
   const canAffordMonthly = finances.maxMonthly >= avgMonthly;
   const canAffordWorst = finances.worstMonthly >= avgMonthly;
 
@@ -120,7 +121,7 @@ export function PropertyCard({
                 <p className="text-xs text-muted-foreground">NPV</p>
               </InfoTip>
               <p className="font-mono text-sm font-semibold text-foreground">
-                {mask(fmtK(p.npv), privacyMode)}
+                {fmtK(p.npv)}
               </p>
             </div>
           </div>
@@ -132,11 +133,11 @@ export function PropertyCard({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-xs text-muted-foreground">List Price</p>
-              <p className="font-mono text-sm text-foreground">{mask(fmtK(p.unitPrice), privacyMode)}</p>
+              <p className="font-mono text-sm text-foreground">{fmtK(p.unitPrice)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Final Price</p>
-              <p className="font-mono text-sm font-semibold text-primary">{mask(fmtK(final), privacyMode)}</p>
+              <p className="font-mono text-sm font-semibold text-primary">{fmtK(final)}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Discount</p>
@@ -147,7 +148,7 @@ export function PropertyCard({
                 <p className="text-xs text-muted-foreground">Price/sqm</p>
               </InfoTip>
               <p className="font-mono text-sm font-semibold text-foreground">
-                {mask(fmt(Math.round(pricePerSqm)), privacyMode)}
+                {fmt(Math.round(pricePerSqm))}
               </p>
             </div>
           </div>
@@ -158,21 +159,18 @@ export function PropertyCard({
               <InfoTip tip="Initial payment required at contract signing">
                 <span className="text-muted-foreground">Down Payment</span>
               </InfoTip>
-              <span className="font-mono font-medium text-foreground">{mask(fmtK(downPayment), privacyMode)}</span>
+              <span className="font-mono font-medium text-foreground">{fmtK(downPayment)}</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">
                 {plan === "custom" ? "Quarterly" : monthly > 0 ? "Monthly" : "Quarterly"}
               </span>
               <span className="font-mono font-medium text-foreground">
-                {mask(
-                  plan === "custom"
-                    ? fmtK(quarterly)
-                    : monthly > 0
-                      ? fmtK(monthly)
-                      : fmtK(quarterly),
-                  privacyMode
-                )}
+                {plan === "custom"
+                  ? fmtK(quarterly)
+                  : monthly > 0
+                    ? fmtK(monthly)
+                    : fmtK(quarterly)}
               </span>
             </div>
             {plan === "standard" && annualBump > 0 && (
@@ -180,12 +178,12 @@ export function PropertyCard({
                 <InfoTip tip="Annual increase added to your installments each year">
                   <span className="text-muted-foreground">Annual Bump</span>
                 </InfoTip>
-                <span className="font-mono font-medium text-foreground">{mask(fmtK(annualBump), privacyMode)}</span>
+                <span className="font-mono font-medium text-foreground">{fmtK(annualBump)}</span>
               </div>
             )}
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Avg Monthly</span>
-              <span className="font-mono font-semibold text-foreground">~{mask(fmtK(Math.round(avgMonthly)), privacyMode)}</span>
+              <span className="font-mono font-semibold text-foreground">~{fmtK(Math.round(avgMonthly))}</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Duration</span>
@@ -195,7 +193,7 @@ export function PropertyCard({
               <InfoTip tip="Annual maintenance fee charged by the developer for common areas and facilities">
                 <span className="text-muted-foreground">Maintenance ({p.maintenancePct}%)</span>
               </InfoTip>
-              <span className="font-mono text-foreground">{mask(fmtK(p.maintenanceAmount), privacyMode)}</span>
+              <span className="font-mono text-foreground">{fmtK(p.maintenanceAmount)}</span>
             </div>
           </div>
 
@@ -205,9 +203,16 @@ export function PropertyCard({
               <p className="text-xs font-medium text-muted-foreground">Affordability Check</p>
               <div className="flex items-center gap-2 text-xs">
                 <span className={cn("h-2 w-2 rounded-full", canAffordDown ? "bg-emerald-400" : "bg-destructive")} />
-                <span className="text-muted-foreground">Down + Maintenance</span>
+                <span className="text-muted-foreground">Down Payment</span>
                 <span className="ml-auto font-mono text-foreground">
-                  {fmtK(downPayment + p.maintenanceAmount)}
+                  {fmtK(downPayment)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className={cn("h-2 w-2 rounded-full", canAffordMaintenance ? "bg-emerald-400" : "bg-destructive")} />
+                <span className="text-muted-foreground">Maintenance</span>
+                <span className="ml-auto font-mono text-foreground">
+                  {fmtK(p.maintenanceAmount)}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs">

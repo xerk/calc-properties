@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { type Finances, fmtK } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,18 @@ function mask(value: string, privacyMode: boolean): string {
   return privacyMode ? "•••••" : value;
 }
 
+function formatNumber(val: number): string {
+  return new Intl.NumberFormat("en-US").format(val);
+}
+
+function parseNumber(val: string): number {
+  const clean = val.replace(/,/g, "").toLowerCase();
+  if (clean.endsWith("k")) return parseFloat(clean) * 1000;
+  if (clean.endsWith("m")) return parseFloat(clean) * 1000000;
+  const parsed = parseFloat(clean);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 export function FinancialProfile({
   balanceUSD,
   maxSalaryUSD,
@@ -43,6 +56,39 @@ export function FinancialProfile({
   onWorstSalaryChange,
   onPrivacyToggle,
 }: FinancialProfileProps) {
+  const [balanceInput, setBalanceInput] = useState(formatNumber(balanceUSD));
+  const [maxInput, setMaxInput] = useState(formatNumber(maxSalaryUSD));
+  const [worstInput, setWorstInput] = useState(formatNumber(worstSalaryUSD));
+
+  const handleChange = (
+    val: string,
+    displaySetter: (v: string) => void,
+    setter: (v: number) => void
+  ) => {
+    // If user types 'k' or 'm', expand immediately for better feedback
+    if (/[\d.]+[km]$/i.test(val)) {
+      const num = parseNumber(val);
+      const formatted = formatNumber(num);
+      displaySetter(formatted);
+      setter(num);
+    } else {
+      displaySetter(val);
+      // Update the actual number if it's a valid digit/comma string
+      const num = parseNumber(val);
+      if (!isNaN(num)) setter(num);
+    }
+  };
+
+  const handleBlur = (
+    val: string,
+    displaySetter: (v: string) => void,
+    setter: (v: number) => void
+  ) => {
+    const num = parseNumber(val);
+    setter(num);
+    displaySetter(formatNumber(num));
+  };
+
   return (
     <TooltipProvider>
       <Collapsible defaultOpen>
@@ -66,7 +112,7 @@ export function FinancialProfile({
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    Hide all financial figures for privacy during meetings
+                    Hide your personal financial capacity during meetings
                   </TooltipContent>
                 </Tooltip>
                 <CollapsibleTrigger asChild>
@@ -89,13 +135,14 @@ export function FinancialProfile({
                       </Label>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Total liquid savings you can use for down payment and maintenance
+                      Total liquid savings you can use for down payment and maintenance. Supports "71.3K" or "10,000".
                     </TooltipContent>
                   </Tooltip>
                   <Input
-                    type={privacyMode ? "password" : "number"}
-                    value={balanceUSD}
-                    onChange={(e) => onBalanceChange(Number(e.target.value))}
+                    type={privacyMode ? "password" : "text"}
+                    value={balanceInput}
+                    onChange={(e) => handleChange(e.target.value, setBalanceInput, onBalanceChange)}
+                    onBlur={(e) => handleBlur(e.target.value, setBalanceInput, onBalanceChange)}
                     className="font-mono"
                   />
                   <p className="font-mono text-xs text-muted-foreground">
@@ -110,13 +157,14 @@ export function FinancialProfile({
                       </Label>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Your best-case monthly income used for installment affordability
+                      Your best-case monthly income used for installment affordability. Supports "10K".
                     </TooltipContent>
                   </Tooltip>
                   <Input
-                    type={privacyMode ? "password" : "number"}
-                    value={maxSalaryUSD}
-                    onChange={(e) => onMaxSalaryChange(Number(e.target.value))}
+                    type={privacyMode ? "password" : "text"}
+                    value={maxInput}
+                    onChange={(e) => handleChange(e.target.value, setMaxInput, onMaxSalaryChange)}
+                    onBlur={(e) => handleBlur(e.target.value, setMaxInput, onMaxSalaryChange)}
                     className="font-mono"
                   />
                   <p className="font-mono text-xs text-muted-foreground">
@@ -131,19 +179,21 @@ export function FinancialProfile({
                       </Label>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Minimum expected monthly income — stress-tests your ability to pay
+                      Minimum expected monthly income — stress-tests your ability to pay.
                     </TooltipContent>
                   </Tooltip>
                   <Input
-                    type={privacyMode ? "password" : "number"}
-                    value={worstSalaryUSD}
-                    onChange={(e) => onWorstSalaryChange(Number(e.target.value))}
+                    type={privacyMode ? "password" : "text"}
+                    value={worstInput}
+                    onChange={(e) => handleChange(e.target.value, setWorstInput, onWorstSalaryChange)}
+                    onBlur={(e) => handleBlur(e.target.value, setWorstInput, onWorstSalaryChange)}
                     className="font-mono"
                   />
                   <p className="font-mono text-xs text-muted-foreground">
                     = {mask(fmtK(worstSalaryUSD * exchangeRate), privacyMode)} EGP
                   </p>
                 </div>
+
 
               </div>
 

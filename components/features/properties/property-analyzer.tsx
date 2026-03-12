@@ -13,8 +13,8 @@ import { FinancialProfile } from "@/components/features/properties/financial-pro
 export function PropertyAnalyzer() {
   const [plan, setPlan] = useState<PlanType>("custom");
   const [selected, setSelected] = useState<number[]>([1, 3, 6]);
-  const [balanceUSD, setBalanceUSD] = useState(10000);
-  const [maxSalaryUSD, setMaxSalaryUSD] = useState(3000);
+  const [balanceUSD, setBalanceUSD] = useState(71300);
+  const [maxSalaryUSD, setMaxSalaryUSD] = useState(10000);
   const [worstSalaryUSD, setWorstSalaryUSD] = useState(2300);
   const [sizeFilter, setSizeFilter] = useState<SizeFilter>("all");
   const [privacyMode, setPrivacyMode] = useState(false);
