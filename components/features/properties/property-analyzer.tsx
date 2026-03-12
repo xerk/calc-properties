@@ -98,23 +98,23 @@ export function PropertyAnalyzer() {
         </p>
       </div>
 
-      {/* Financial Profile & Map Context */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-        <div className="lg:col-span-3">
-          <FinancialProfile
-            balanceUSD={balanceUSD}
-            maxSalaryUSD={maxSalaryUSD}
-            worstSalaryUSD={worstSalaryUSD}
-            exchangeRate={exchangeRate}
-            finances={finances}
-            privacyMode={privacyMode}
-            rateLoading={rateLoading}
-            rateError={rateError}
-            onBalanceChange={setBalanceUSD}
-            onMaxSalaryChange={setMaxSalaryUSD}
-            onWorstSalaryChange={setWorstSalaryUSD}
-            onPrivacyToggle={setPrivacyMode}
-            renderActions={
+      {/* Financial Profile & Contextual Actions */}
+      <div className="w-full">
+        <FinancialProfile
+          balanceUSD={balanceUSD}
+          maxSalaryUSD={maxSalaryUSD}
+          worstSalaryUSD={worstSalaryUSD}
+          exchangeRate={exchangeRate}
+          finances={finances}
+          privacyMode={privacyMode}
+          rateLoading={rateLoading}
+          rateError={rateError}
+          onBalanceChange={setBalanceUSD}
+          onMaxSalaryChange={setMaxSalaryUSD}
+          onWorstSalaryChange={setWorstSalaryUSD}
+          onPrivacyToggle={setPrivacyMode}
+          renderActions={
+            <div className="flex items-center gap-2">
               <ScenarioManager
                 currentProfile={{
                   balanceUSD,
@@ -124,13 +124,10 @@ export function PropertyAnalyzer() {
                 }}
                 onLoad={handleLoadScenario}
               />
-            }
-          />
-        </div>
-        
-        <div className="lg:col-span-1">
-          <PropertyMap />
-        </div>
+              <PropertyMap />
+            </div>
+          }
+        />
       </div>
 
       {/* Controls */}

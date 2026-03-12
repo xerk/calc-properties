@@ -262,26 +262,29 @@ export function PropertyCard({
           )}
 
         </CardContent>
-        <CardFooter className="p-3 pt-0 border-t border-border/50">
-          <div className="w-full flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-2 mt-3">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="size-3 text-primary" />
-                <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Est. Rental Yield</span>
+        <CardFooter className="px-4 py-3 border-t border-border/50">
+          <div className="w-full flex items-center justify-between py-1">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5 text-primary">
+                <TrendingUp className="size-3" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Rental Yield</span>
               </div>
-              <p className="mt-0.5 font-mono text-sm font-bold text-foreground">{pct(rentalYield)} <span className="text-[10px] font-normal text-muted-foreground text-nowrap">yr / net</span></p>
+              <p className="font-mono text-sm font-bold text-foreground">
+                {pct(rentalYield)} 
+                <span className="ml-1.5 text-[10px] font-normal text-muted-foreground uppercase">yr / net</span>
+              </p>
             </div>
             
             <PaymentScheduleSidebar property={p} plan={plan}>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                className="size-8 rounded-full hover:bg-muted"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
               >
-                <Calendar className="size-4" />
+                <Calendar className="size-4 text-muted-foreground" />
               </Button>
             </PaymentScheduleSidebar>
           </div>
