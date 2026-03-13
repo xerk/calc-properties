@@ -1,11 +1,17 @@
 "use client";
 
-import { properties, fmtK } from "@/lib/data";
+import { type Property, fmtK } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-export function NpvComparisonChart() {
+interface NpvComparisonChartProps {
+  properties: Property[];
+}
+
+export function NpvComparisonChart({ properties }: NpvComparisonChartProps) {
+  if (properties.length === 0) return null;
+
   const sorted = [...properties].sort((a, b) => a.npv - b.npv);
   const maxNpv = Math.max(...properties.map((x) => x.npv));
   const minNpv = Math.min(...properties.map((x) => x.npv));

@@ -1,16 +1,19 @@
 "use client";
 
-import { type PlanType, properties, fmt } from "@/lib/data";
+import { type Property, type PlanType, fmt } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 interface PriceComparisonChartProps {
   plan: PlanType;
+  properties: Property[];
 }
 
-export function PriceComparisonChart({ plan }: PriceComparisonChartProps) {
-  const getPrice = (p: (typeof properties)[number]) =>
+export function PriceComparisonChart({ plan, properties }: PriceComparisonChartProps) {
+  if (properties.length === 0) return null;
+
+  const getPrice = (p: Property) =>
     (plan === "custom" ? p.customFinal : p.standardFinal) / p.bua;
 
   const sorted = [...properties].sort((a, b) => getPrice(a) - getPrice(b));

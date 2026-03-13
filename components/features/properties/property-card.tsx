@@ -2,6 +2,11 @@
 
 import { type Property, type Finances, type PlanType, fmt, fmtK, pct, getRentalYield, isCoreAndShell } from "@/lib/data";
 import {
+  type PropertyScore,
+  getRecommendationBadgeColor,
+  getRecommendationLabel,
+} from "@/lib/scoring";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -12,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Calendar, TrendingUp, Info } from "lucide-react";
+import { Calendar, TrendingUp, Info, Sparkles } from "lucide-react";
 import { PaymentScheduleSidebar } from "@/components/features/properties/payment-schedule-sidebar";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +31,7 @@ interface PropertyCardProps {
   finances: Finances;
   privacyMode: boolean;
   finishingPricePerSqm: number;
+  score?: PropertyScore;
 }
 
 function mask(value: string, privacyMode: boolean): string {
@@ -55,6 +61,7 @@ export function PropertyCard({
   finances,
   privacyMode,
   finishingPricePerSqm,
+  score,
 }: PropertyCardProps) {
   const needsFinishing = isCoreAndShell(p.project);
   const finishingCostTotal = needsFinishing ? finishingPricePerSqm * p.bua : 0;
@@ -103,6 +110,7 @@ export function PropertyCard({
             : "hover:border-primary/30 border-border/50 shadow-sm"
         )}
       >
+        {/* Best Value Badge */}
         {isCheapest && (
           <div className="absolute -top-3 left-4 z-50 pointer-events-none">
             <div className="relative">
@@ -111,6 +119,21 @@ export function PropertyCard({
                 Best Value /sqm
               </Badge>
             </div>
+          </div>
+        )}
+
+        {/* Recommendation Score Badge */}
+        {score && !privacyMode && (
+          <div className="absolute -top-3 right-4 z-50 pointer-events-none">
+            <Badge
+              className={cn(
+                "text-[9px] font-bold uppercase tracking-tight px-2 py-1 shadow-lg flex items-center gap-1",
+                getRecommendationBadgeColor(score.recommendation)
+              )}
+            >
+              <Sparkles className="size-3" />
+              {score.totalScore}
+            </Badge>
           </div>
         )}
 

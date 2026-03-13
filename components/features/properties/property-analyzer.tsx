@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { type PlanType, type SizeFilter, properties, formatNumber, parseNumber } from "@/lib/data";
+import { type PlanType, type SizeFilter, formatNumber, parseNumber } from "@/lib/data";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { X, RotateCcw } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { useExchangeRate } from "@/hooks/use-exchange-rate";
+import { useProperties } from "@/hooks/use-properties";
 import { PropertyCard } from "@/components/features/properties/property-card";
 import { ComparisonTable } from "@/components/features/properties/comparison-table";
 import { PriceComparisonChart } from "@/components/features/properties/price-comparison-chart";
@@ -16,6 +16,8 @@ import { FinancialProfile } from "@/components/features/properties/financial-pro
 
 import { ScenarioManager } from "@/components/features/properties/scenario-manager";
 import { PropertyMap } from "@/components/features/properties/property-map";
+import { PropertySuggestions } from "@/components/features/properties/property-suggestions";
+import { calculateAllPropertyScores } from "@/lib/scoring";
 import { type Scenario } from "@/lib/db/schema";
 
 export function PropertyAnalyzer() {
@@ -32,6 +34,7 @@ export function PropertyAnalyzer() {
   const [finishingInput, setFinishingInput] = useState("0");
 
   const { rate: exchangeRate, setRate: setExchangeRate, loading: rateLoading, error: rateError } = useExchangeRate();
+  const { properties, loading: propertiesLoading, error: propertiesError } = useProperties();
 
   const handleLoadScenario = (s: Scenario) => {
     setBalanceUSD(s.balanceUSD);
@@ -68,12 +71,12 @@ export function PropertyAnalyzer() {
     [balanceUSD, maxSalaryUSD, worstSalaryUSD, exchangeRate]
   );
 
-  const cheapestCustom = Math.min(
-    ...properties.map((p) => p.customFinal / p.bua)
-  );
-  const cheapestStd = Math.min(
-    ...properties.map((p) => p.standardFinal / p.bua)
-  );
+  const cheapestCustom = properties.length > 0
+    ? Math.min(...properties.map((p) => p.customFinal / p.bua))
+    : 0;
+  const cheapestStd = properties.length > 0
+    ? Math.min(...properties.map((p) => p.standardFinal / p.bua))
+    : 0;
 
   const filtered = properties.filter((p) => {
     const isSizeFilterMatch = sizeFilter === "all" ||
@@ -84,6 +87,13 @@ export function PropertyAnalyzer() {
 
     return isSizeFilterMatch && isAreaMatch;
   });
+
+  // Calculate scores for all properties
+  const propertyScores = useMemo(() => {
+    if (properties.length === 0) return new Map();
+    const scores = calculateAllPropertyScores(properties, finances, plan, finishingPricePerSqm);
+    return new Map(scores.map(s => [s.propertyId, s]));
+  }, [properties, finances, plan, finishingPricePerSqm]);
 
   const toggleSelect = (id: number) => {
     setSelected((s) =>
@@ -102,9 +112,23 @@ export function PropertyAnalyzer() {
           Property Investment Analyzer
         </h1>
         <p className="text-sm text-muted-foreground">
-          Madinet Masr — TALALA · Club Views · Elm Tree Park — 6 units compared
+          Madinet Masr — TALALA · Club Views · Elm Tree Park — {properties.length} units compared
         </p>
       </div>
+
+      {/* Loading state */}
+      {propertiesLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Error state */}
+      {propertiesError && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
+          <p className="text-sm text-destructive">Failed to load properties: {propertiesError}</p>
+        </div>
+      )}
 
       {/* Financial Profile & Contextual Actions */}
       <div className="w-full">
@@ -137,6 +161,18 @@ export function PropertyAnalyzer() {
           }
         />
       </div>
+
+      {/* Property Suggestions */}
+      {!propertiesLoading && properties.length > 0 && (
+        <PropertySuggestions
+          properties={properties}
+          finances={finances}
+          plan={plan}
+          finishingPricePerSqm={finishingPricePerSqm}
+          onSelectProperty={toggleSelect}
+          selectedIds={selected}
+        />
+      )}
 
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-4">
@@ -221,7 +257,7 @@ export function PropertyAnalyzer() {
       </div>
 
       {/* Property Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map((p) => (
           <PropertyCard
             key={p.id}
@@ -234,23 +270,25 @@ export function PropertyAnalyzer() {
             finances={finances}
             privacyMode={privacyMode}
             finishingPricePerSqm={finishingPricePerSqm}
+            score={propertyScores.get(p.id)}
           />
         ))}
       </div>
 
       {/* Comparison Table */}
       {selected.length >= 2 && (
-        <ComparisonTable 
-          selected={selected} 
-          plan={plan} 
-          finishingPricePerSqm={finishingPricePerSqm} 
+        <ComparisonTable
+          selected={selected}
+          plan={plan}
+          finishingPricePerSqm={finishingPricePerSqm}
+          properties={properties}
         />
       )}
 
       {/* Visual Charts - Moved back to bottom per user feedback */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <PriceComparisonChart plan={plan} />
-        <NpvComparisonChart />
+        <PriceComparisonChart plan={plan} properties={properties} />
+        <NpvComparisonChart properties={properties} />
       </div>
 
       {/* Footer notes */}

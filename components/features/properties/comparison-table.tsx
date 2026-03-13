@@ -8,15 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { properties } from "@/lib/data";
 
 interface ComparisonTableProps {
   selected: number[];
   plan: PlanType;
   finishingPricePerSqm: number;
+  properties: Property[];
 }
 
-export function ComparisonTable({ selected, plan, finishingPricePerSqm }: ComparisonTableProps) {
+export function ComparisonTable({ selected, plan, finishingPricePerSqm, properties }: ComparisonTableProps) {
   const items = properties.filter((p) => selected.includes(p.id));
 
   const rows: { label: string; fn: (p: Property, plan: PlanType) => string | number }[] = [
